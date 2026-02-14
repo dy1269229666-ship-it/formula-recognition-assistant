@@ -1,0 +1,94 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact: formula-ocr.exe
+            artifact_path: src-tauri/target/release/formula-ocr.exe
+            asset_name: 公式识别助手_Windows_x64.exe
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact: formula-ocr
+            artifact_path: src-tauri/target/release/bundle/dmg/*.dmg
+            asset_name: 公式识别助手_macOS_arm64.dmg
+          - os: macos-13
+            target: x86_64-apple-darwin
+            artifact: formula-ocr
+            artifact_path: src-tauri/target/release/bundle/dmg/*.dmg
+            asset_name: 公式识别助手_macOS_x64.dmg
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Tauri (Windows)
+        if: matrix.os == 'windows-latest'
+        run: npx tauri build --target ${{ matrix.target }} --bundles none
+
+      - name: Build Tauri (macOS)
+        if: startsWith(matrix.os, 'macos')
+        run: npx tauri build --target ${{ matrix.target }}
+
+      - name: Upload Windows exe
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-exe
+          path: src-tauri/target/x86_64-pc-windows-msvc/release/formula-ocr.exe
+
+      - name: Upload macOS dmg
+        if: startsWith(matrix.os, 'macos')
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg-${{ matrix.target }}
+          path: src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/**/*
+          generate_release_notes: true
