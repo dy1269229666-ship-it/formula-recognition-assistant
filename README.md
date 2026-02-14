@@ -21,8 +21,8 @@
 
 | 服务 | 用途 | 费用 | 注册 |
 |------|------|------|------|
-| SimpleTex | 公式/文档识别（主力） | 调用api需要付20人民币。每日免费额度（标准模型500次/轻量模型2000次） | [注册链接](https://simpletex.net/user/register?code=AV24vCJq) |
-| 硅基流动 | 视觉大模型识别（备选） | 有免费模型，付费模型按量计费 | [注册链接](https://cloud.siliconflow.cn/i/jAYUyU8w) |
+| SimpleTex | 公式/文档识别 | 首次调用api需要付20人民币。每日免费额度（标准模型500次/轻量模型2000次） | [注册链接](https://simpletex.net/user/register?code=AV24vCJq) |
+| 硅基流动 | 视觉大模型识别 | 有免费模型，付费模型按量计费 | [注册链接](https://cloud.siliconflow.cn/i/jAYUyU8w) |
 
 > 只配置 SimpleTex 就能正常使用，硅基流动是可选的方案。
 
